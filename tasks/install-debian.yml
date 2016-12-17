@@ -11,6 +11,14 @@
     update_cache: yes
     state:        present
 
+- name: Create telegraf service file
+  template:
+    src:   telegraf.service.j2
+    dest:  /lib/systemd/system/telegraf.service
+    owner: root
+    group: root
+    mode:  0644
+
 - name: Install telegraf
   apt: 
     name:  "telegraf={{ telegraf_version|default('*') }}"
