@@ -86,19 +86,68 @@ telegraf_inputs:
     urls: [
       "http://localhost:8086/debug/vars"
     ]
+
+  # Read metrics from one or more commands that can output to stdout
+  - name: exec
+    ## Commands array
+    commands: ["/opt/metrics.py"]
+    ## Timeout for each command to complete.
+    timeout: "5s"
   
-#telegraf_service_inputs:
-#  # Stream and parse log file(s).
-#  - name: logparser
-#    files: ["/var/log/apache/access.log"]
-#    from_beginning: false
-#    grok:
-#      patterns: ["%{COMBINED_LOG_FORMAT}"]
-#      measurement: "apache_access_log"
-#      custom_pattern_files: []
-#      custom_patterns: | 
-#        CUSTOM_PATTERN_1_LOG_FORMAT
-#        CUSTOM_PATTERN_2_LOG_FORMAT
+    ## measurement name suffix (for separating different commands)
+    name_prefix: "mycoy_"
+  
+    ## Data format to consume.
+    ## Each data format has it's own unique set of configuration options, read
+    ## more about them here:
+    ## https://github.com/influxdata/telegraf/blob/master/docs/DATA_FORMATS_INPUT.md
+    data_format: "influx"
+
+  # Read metrics from one or more commands that can output to stdout
+  - name: exec
+    commands: ["curl -s http://localhost:8001/status"]
+    #commands: ["/opt/kong-metrics-collector.py"]
+    timeout: "5s"
+    name_override: "mycoy_kong"
+    ## Data format to consume.
+    ## Each data format has it's own unique set of configuration options, read
+    ## more about them here:
+    ## https://github.com/influxdata/telegraf/blob/master/docs/DATA_FORMATS_INPUT.md
+    data_format: json
+
+  # HTTP/HTTPS request given an address a method and a timeout
+  - name: http_response
+    ## Server address (default http://localhost)
+    address: "http://localhost:8080"
+    ### Set response_timeout (default 5 seconds)
+    #response_timeout: 5
+    ### HTTP Request Method
+    #method: "GET"
+    ### Whether to follow redirects from the server (defaults to false)
+    #follow_redirects: true
+  - name: http_response
+    ## Server address (default http://localhost)
+    address: "http://localhost:8888"
+    ### Set response_timeout (default 5 seconds)
+    #response_timeout: 5
+    ### HTTP Request Method
+    #method: "GET"
+    ### Whether to follow redirects from the server (defaults to false)
+    #follow_redirects: true
+   
+  
+telegraf_service_inputs:
+  # Stream and parse log file(s).
+  - name: logparser
+    files: ["/var/log/apache/access.log"]
+    from_beginning: false
+    grok:
+      patterns: ["%{COMBINED_LOG_FORMAT}"]
+      measurement: "apache_access_log"
+      #custom_pattern_files: []
+      #custom_patterns: | 
+      #  CUSTOM_PATTERN_1_LOG_FORMAT
+      #  CUSTOM_PATTERN_2_LOG_FORMAT
 #  # A Webhooks Event collector
 #  - name: webhooks
 #    ## Address and port to host Webhook listener on
